@@ -1,5 +1,4 @@
 import random
-from random import shuffle
 import time
 import socket
 from support import get_ip
@@ -64,14 +63,13 @@ class HubServer:
 
     def _insert_into_storage(self, room, player_name, prompt):
         stage = self._calculate_game_stage(room.get_host_name())
-        print(stage)
+        print(stage, "  ", player_name)
         room_storage = self.local_storage[room.get_host_name()]
         try:
             room_storage[player_name][1][stage] = prompt
         except IndexError:
             pass
         finally:
-            print(prompt)
             return stage
 
     def handle_client(self, conn, addr):
@@ -158,13 +156,9 @@ class HubServer:
 
     def _find_data_in_storage(self, host, player, stage):
         room_storage = self.local_storage[host]
-        print(room_storage)
-        data = None
-        for key in room_storage.keys():
-            if room_storage[key][0][stage+1] == player:
-                data = room_storage[key][1][stage]
-        print(data)
-        return data
+        keys = list(room_storage.keys())
+        player = keys[(keys.index(player) + stage) % len(keys)]
+        return room_storage[player][1][stage]
 
     def send_next_game_data(self, message, conn):
         message = message.split(",")
@@ -172,10 +166,10 @@ class HubServer:
         conn.send(pickle.dumps(data))
 
     def receive_canvas(self, message, conn):
+        message, name = message.split(",")
         for room in self.active_rooms:
             if message == room.get_host_name():
                 conn.send(pickle.dumps("FOUND"))
-                player_name = pickle.loads(conn.recv(1024))
                 data = b''
                 while True:
                     part = conn.recv(4096)
@@ -183,17 +177,16 @@ class HubServer:
                     if len(part) < 4096:
                         break
                 canvas = pickle.loads(data)
-                print("received")
-                self._insert_into_storage(room, player_name, canvas)
+                self._insert_into_storage(room, name, canvas)
                 conn.send(pickle.dumps("ADDED"))
 
     def receive_prompt(self, message, conn):
+        message, name = message.split(",")
         for room in self.active_rooms:
             if message == room.get_host_name():
                 conn.send(pickle.dumps("FOUND"))
-                player_name = pickle.loads(conn.recv(1024))
                 prompt = pickle.loads(conn.recv(1024))
-                self._insert_into_storage(room, player_name, prompt)
+                self._insert_into_storage(room, name, prompt)
                 conn.send(pickle.dumps("ADDED"))
 
     def close_a_game(self, message, conn):

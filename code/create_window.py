@@ -49,7 +49,7 @@ class CreateWindow(tk.Toplevel):
         """
         Combo boxes
         """
-        self.room_size_input = ttk.Combobox(self.entry_frame, values=("2", "3", "4", "5", "6"),
+        self.room_size_input = ttk.Combobox(self.entry_frame, values=("2", "3", "4", "5"),
                                             font=(FONT_NAME, SIZE_INPUT_FONT_SIZE), state="readonly")
         self.room_size_input.current(0)
         self.room_private_cfg = ttk.Combobox(self.entry_frame, values=("private", "public"),

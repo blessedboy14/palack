@@ -186,6 +186,11 @@ class GameWindow(tk.Toplevel):
             self.result_canvas.create_text(RIGHT_AVATAR_X, offset_y + MINI_AVATAR_SIZE[0] - 5, anchor="center",
                                            text=nick, font=BASE_FONT)
 
+    def _find_nick_by_stage(self, stage, game_data, nick):
+        for key in game_data.keys():
+            if game_data[key][0][stage] == nick:
+                return key
+
     def generate_result(self, game_data, index):
         key = list(game_data.keys())[index]
         mini_storage = game_data[key]
@@ -193,10 +198,14 @@ class GameWindow(tk.Toplevel):
         sides = [tk.RIGHT, tk.LEFT]
         offset = BASE_OFFSET_Y
         i = 0
-        while i < len(mini_storage[0]):
-            nick = mini_storage[0][0]
+        length = len(mini_storage[0])
+        data_index = index + 1
+        data_key = list(game_data.keys())[data_index % length]
+        data_storage = game_data[data_key]
+        while i < length:
+            nick = mini_storage[0][i]
             self._place_mini_avatar(sides[i % 2], offset, nick)
-            data = mini_storage[1][i]
+            data = data_storage[1][i]
             if i % 2 == 0:
                 self.text_item = self.result_canvas.create_text(0, 0, text=data, font=(FONT_NAME, 12))
                 bounds = self.result_canvas.bbox(self.text_item)
@@ -212,14 +221,16 @@ class GameWindow(tk.Toplevel):
                                                 image=self.temp_photos[-1])
                 offset += AVATAR_SIZE[0] + 200
             i += 1
-            # index = (index + 1) % len(list(game_data.keys()))
+            data_index += 2
+            data_key = list(game_data.keys())[data_index % length]
+            data_storage = game_data[data_key]
 
     def print_data_on_screen(self, game_data):
         self._generate_avatars_dict()
         self.left_swipe_btn.place(relx=0.9, rely=0.957)
         self.right_swipe_btn.place(relx=0.935, rely=0.957)
         keys = list(game_data.keys())
-        scroll_x, scroll_y = len(game_data[keys[0]][1])*300, len(game_data[keys[0]][1])*300
+        scroll_x, scroll_y = len(game_data[keys[0]][1])*240, len(game_data[keys[0]][1])*240
         self._result_canvas_config((0, 0, scroll_x, scroll_y))
         print(game_data)
         self.generate_result(game_data, self.curr_page)
@@ -234,12 +245,18 @@ class GameWindow(tk.Toplevel):
         if not self.is_solo_player(game_data):
             self.print_data_on_screen(game_data)
 
+    def _find_next_in_list(self, player_list):
+        for player in player_list:
+            if player.get_nickname() == self.player.get_nickname():
+                return player_list.index(player) + self.current_stage
+
     def prompt_call(self, message):
+        player_list = self.room.get_player_list()
+        name = player_list[self._find_next_in_list(player_list) % len(player_list)].get_nickname()
         message = message if len(message) > 0 else "no prompt input"
-        self.room_conn.send(pickle.dumps(f"PROMPT\r\n{self.room.get_host_name()}"))
+        self.room_conn.send(pickle.dumps(f"PROMPT\r\n{self.room.get_host_name()},{name}"))
         response = pickle.loads(self.room_conn.recv(1024))
         if response == "FOUND":
-            self.room_conn.send(pickle.dumps(f"{self.player.get_nickname()}"))
             self.room_conn.send(pickle.dumps(f"{message}"))
             pickle.loads(self.room_conn.recv(1024))
             self.prompt_lbl['text'] = "Зарисуй предложение"
@@ -258,10 +275,11 @@ class GameWindow(tk.Toplevel):
                 self.current_stage += 1
 
     def paint_call(self, message):
-        self.room_conn.send(pickle.dumps(f"CANVAS\r\n{self.room.get_host_name()}"))
+        player_list = self.room.get_player_list()
+        name = player_list[self._find_next_in_list(player_list) % len(player_list)].get_nickname()
+        self.room_conn.send(pickle.dumps(f"CANVAS\r\n{self.room.get_host_name()},{name}"))
         response = pickle.loads(self.room_conn.recv(1024))
         if response == "FOUND":
-            self.room_conn.send(pickle.dumps(f"{self.player.get_nickname()}"))
             message_pickled = pickle.dumps(message)
             self.room_conn.send(message_pickled)
             pickle.loads(self.room_conn.recv(1024))
