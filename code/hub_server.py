@@ -54,13 +54,6 @@ class HubServer:
                     stages.append(stage)
         return min(stages) if len(stages) > 0 else 0
 
-    def _check_stage_complete(self, room, stage):
-        storage = self.local_storage[room.get_host_name()]
-        for key in storage.keys():
-            if storage[key][1][stage] is None:
-                return False
-        return True
-
     def _insert_into_storage(self, room, player_name, prompt):
         stage = self._calculate_game_stage(room.get_host_name())
         print(stage, "  ", player_name)

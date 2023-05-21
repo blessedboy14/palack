@@ -4,7 +4,7 @@ from PIL import ImageTk
 from settings import *
 from tkinter import messagebox
 from support import center
-from pygame import mixer
+# from pygame import mixer
 from create_window import CreateWindow
 from room_window import RoomWindow
 import pickle
@@ -66,9 +66,9 @@ class HubWindow(tk.Tk):
         Refresh button personal
         """
         self.can_refresh = True
-        mixer.init()
-        self.forbid_btn_sound = mixer.Sound("../sounds/btn_forbid.mp3")
-        self.forbid_btn_sound.set_volume(0.2)
+        # mixer.init()
+        # self.forbid_btn_sound = mixer.Sound("../sounds/btn_forbid.mp3")
+        # self.forbid_btn_sound.set_volume(0.2)
 
         """
         Some stuff
@@ -130,7 +130,8 @@ class HubWindow(tk.Tk):
                 self.can_refresh = False
                 self.after(4000, self.inverse_refresh)
             else:
-                self.forbid_btn_sound.play()
+                pass# self.forbid_btn_sound.play()
+
 
     def send_server_verification(self, room):
         if room.is_private():
@@ -194,7 +195,6 @@ class HubWindow(tk.Tk):
             room = RoomWindow(created_room, self.player, self.window_conn)
             room.start()
             self.wait_window(room)
-            # self.window_conn.send(pickle.dumps(f"DELETE_ROOM\r\n{self.player.get_nickname()}"))
             self.deiconify()
             self.check_is_empty()
             self.refresh_table_items("important")

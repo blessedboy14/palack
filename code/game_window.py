@@ -232,7 +232,6 @@ class GameWindow(tk.Toplevel):
         keys = list(game_data.keys())
         scroll_x, scroll_y = len(game_data[keys[0]][1])*240, len(game_data[keys[0]][1])*240
         self._result_canvas_config((0, 0, scroll_x, scroll_y))
-        print(game_data)
         self.generate_result(game_data, self.curr_page)
 
     def call_end(self):
@@ -270,7 +269,7 @@ class GameWindow(tk.Toplevel):
                 self.ask_next_part("prompt")
                 self.paint.place_paint()
                 self.paint.unsleep_canvas()
-                self.timer = Timer(self, self.canvas_time-3*self.current_stage, "canvas")
+                self.timer = Timer(self, self.canvas_time-3.2*self.current_stage, "canvas")
                 self.timer.start_timer()
                 self.current_stage += 1
 
@@ -293,13 +292,12 @@ class GameWindow(tk.Toplevel):
                 self.mode = "prompt"
                 self.ask_next_part("canvas")
                 self.paint.sleep_canvas()
-                self.timer = Timer(self, self.prompt_time-2*self.current_stage, "prompt")
+                self.timer = Timer(self, self.prompt_time-2.5*self.current_stage, "prompt")
                 self.timer.start_timer()
                 self.current_stage += 1
 
     def start_game(self):
         self.timer = Timer(self, self.prompt_time, "prompt")
-        # self.timer = Timer(self, 4, "prompt")
         self.timer.start_timer()
         self.mode = "prompt"
         self.current_stage += 1

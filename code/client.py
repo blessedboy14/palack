@@ -6,7 +6,7 @@ import pickle
 
 class Client:
     def __init__(self):
-        self.server_ip = '192.168.1.101'
+        self.server_ip = '172.20.10.2'
         self.server_port = 5050
         self.server_addr = (self.server_ip, self.server_port)
         self.start_window = StartWindow(self.server_addr)

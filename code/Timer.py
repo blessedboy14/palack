@@ -1,5 +1,4 @@
 from tkinter import ttk
-from threading import Thread
 
 
 class Timer:
